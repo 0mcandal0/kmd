@@ -163,7 +163,8 @@ pub struct IO_STACK_LOCATION
 	/// A union that depends on the major and minor IRP function code values
 	/// contained in `MajorFunction` and `MinorFunction`.
 	// union Parameters
-	pub Parameters: [PVOID; 4],
+	// pub Parameters: [PVOID; 4],
+	pub Parameters: IO_STACK_LOCATION_s1_Parameters,
 
 	/// A pointer to the driver-created `DEVICE_OBJECT` structure
 	/// representing the target physical, logical, or virtual device for which this driver is to handle the IRP.
@@ -174,6 +175,48 @@ pub struct IO_STACK_LOCATION
 	pub CompletionRoutine: PIO_COMPLETION_ROUTINE,
 	/// The following is used to store the address of the context parameter that should be passed to the `CompletionRoutine`.
 	pub Context: PVOID,
+}
+
+UNION!{union  IO_STACK_LOCATION_s1_Parameters{
+     [u32; 4usize]  [u64; 4usize],
+    DeviceIoControl DeviceIoControl_mut: IO_STACK_LOCATION_s1_Parameters_u1_DeviceIoControl,
+}}
+
+#[cfg(target_arch = "x86")]
+mod _hide {
+    use super::*;
+    #[repr(C)]
+    #[derive(Clone)]
+    pub struct IO_STACK_LOCATION_s1_Parameters_u1_DeviceIoControl {
+        pub OutputBufferLength: ULONG,
+        pub InputBufferLength: ULONG,
+        pub IoControlCode: ULONG,
+        pub Type3InputBuffer: PVOID,
+    }
+}
+
+#[cfg(target_arch = "x86_64")]
+mod _hide {
+    use super::*;
+    #[repr(C)]
+    #[derive(Clone)]
+    pub struct IO_STACK_LOCATION_s1_Parameters_u1_DeviceIoControl {
+        pub OutputBufferLength: ULONG,
+        pub __bindgen_padding_0: u32,
+        pub InputBufferLength: ULONG,
+        pub __bindgen_padding_1: u32,
+        pub IoControlCode: ULONG,
+        pub Type3InputBuffer: PVOID,
+    }
+}
+pub use self::_hide::*;
+
+#[repr(C)]
+pub struct IO_STACK_LOCATION_Parameters_DeviceControl {
+    pub OutputBufferLength: ULONG,
+    pub InputBufferLength: ULONG,
+    pub IoControlCode: ULONG,
+    pub Type3InputBuffer: PVOID,
 }
 
 /// Parameters for `IRP_MJ_READ`.
